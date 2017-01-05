@@ -16,6 +16,8 @@ public class PlayerController : MonoBehaviour {
 		float horizontal = Input.GetAxis ("Horizontal");	
 		float vertical = Input.GetAxis ("Vertical");
 
-		body.AddForce (new Vector2 (horizontal, vertical) * speed);
+		Vector2 direction = new Vector2 (horizontal, vertical);
+
+		body.velocity = speed * direction;
 	}
 }
