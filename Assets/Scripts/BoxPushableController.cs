@@ -18,9 +18,39 @@ public class BoxPushableController : MonoBehaviour {
 		Vector2 normal = collision.contacts [0].normal.normalized;
 
 		if (collision.gameObject.CompareTag("Box Pushable")) {
-			body.velocity = Vector2.zero;
-
 			collisions [collision.gameObject] = normal;
+
+			if (body.velocity.sqrMagnitude > 0) {
+				Vector2 direction = body.velocity;
+
+				foreach (KeyValuePair<GameObject, Vector2> entry in collisions) {
+					if (direction.x > 0 && entry.Value.x < 0) {
+						direction.x = 0;
+						continue;
+					}
+
+					if (direction.x < 0 && entry.Value.x > 0) {
+						direction.x = 0;
+						continue;
+					}
+
+					if (direction.y < 0 && entry.Value.y > 0) {
+						direction.y = 0;
+						continue;
+					}
+
+					if (direction.y > 0 && entry.Value.y < 0) {
+						direction.y = 0;
+						continue;
+					}
+				}
+
+				direction.Normalize ();
+
+				body.velocity = direction * speed;	
+
+				return;
+			}
 		}
 
 		if (collision.gameObject.CompareTag("Player")) {
