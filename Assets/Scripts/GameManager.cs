@@ -1,10 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour {
 
-	[HideInInspector]
 	public static GameManager instance;
 
 	public List<TextAsset> rawLevels;
@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour {
 	public GameObject WallTile;
 	public GameObject PlayerTile;
 	public GameObject DiamondTile;
+	public GameObject BoxTile;
 
 	private int level = -1;
 
@@ -23,17 +24,30 @@ public class GameManager : MonoBehaviour {
 	private GameObject player;
 
 	void Awake() {
-		instance = this;
-		DontDestroyOnLoad (this);
-	}
+		if (instance == null) {
+			instance = this;
+		} else if (instance != this){
+			Destroy (gameObject);    
+		}
 
-	void Start() {
-		LoadNextLevel ();
+		DontDestroyOnLoad (gameObject);
 	}
 
 	void LoadNextLevel() {
 		level += 1;
 		LoadLevel (level);
+	}
+
+	void OnLevelFinishedLoading(Scene scene, LoadSceneMode mode) {
+		LoadNextLevel ();
+	}
+
+	void OnEnable(){
+		SceneManager.sceneLoaded += OnLevelFinishedLoading;
+	}
+
+	void OnDisable(){
+		SceneManager.sceneLoaded -= OnLevelFinishedLoading;
 	}
 
 	void Update() {
@@ -62,37 +76,55 @@ public class GameManager : MonoBehaviour {
 		int nx = px + xDir;
 		int ny = py + yDir;
 
-		int new_tile = ny * this.currentLevelColumns + nx;
-		int player_tile = py * this.currentLevelColumns + px;
+		int fx = nx + xDir;
+		int fy = ny + yDir;
 
-		if (new_tile < 0 || new_tile >= this.currentLevel.Length) {
+		int playerTile = py * this.currentLevelColumns + px;
+		int newTile = ny * this.currentLevelColumns + nx;
+
+		if (newTile < 0 || newTile >= this.currentLevel.Length) {
 			return;
 		}
 
-		GameObject neighbour = this.currentLevel[new_tile];
+		GameObject target = this.currentLevel[newTile];
 
-		if (neighbour == null) {
+		if (target == null) {
 			player.transform.position = new Vector3(nx, ny, 0);
-			this.currentLevel [new_tile] = this.currentLevel [player_tile];
-			this.currentLevel [player_tile] = null;
-//			int far_tile = (ny + yDir) * levelManager.cols + (nx + xDir);
-//
-//			if ((far_tile > -1) && (far_tile < tiles.Length) && (tiles[far_tile].tag != "Wall")) {
-//				// we can push!
-//
-//				// push the wall
-//				SwapTiles(new_tile, far_tile);
-//				neighbour.transform.position = new Vector3(nx + xDir, ny + yDir, 0);
-//
-//				// move the player
-//				SwapTiles(player_tile, new_tile);
-//				player.transform.position = new Vector3(nx, ny, 0);
-//
-//				// a wall moved so check for victory
-//				CheckVictory();
-//			}
-//
-//			return;
+			this.currentLevel [newTile] = this.currentLevel [playerTile];
+			this.currentLevel [playerTile] = null;
+			return;
+		}
+
+		if (target.CompareTag ("Diamond")) {
+			player.transform.position = new Vector3(nx, ny, 0);
+			this.currentLevel [newTile].SetActive (false);
+			this.currentLevel [newTile] = this.currentLevel [playerTile];
+			this.currentLevel [playerTile] = null;
+
+			if (GameObject.FindWithTag ("Diamond") == null) {
+				SceneManager.LoadScene (0);
+			}
+			return;
+		}
+
+		if (target.CompareTag ("Box")) {
+			int farTile = fy * this.currentLevelColumns + fx;
+
+			if (farTile < 0 || farTile >= this.currentLevel.Length) {
+				return;
+			}
+
+			if (this.currentLevel [farTile] == null) {
+				this.currentLevel [newTile].transform.position = new Vector3 (fx, fy, 0);
+				this.currentLevel [farTile] = this.currentLevel [newTile];
+				this.currentLevel [newTile] = null;
+
+				player.transform.position = new Vector3(nx, ny, 0);
+				this.currentLevel [newTile] = this.currentLevel [playerTile];
+				this.currentLevel [playerTile] = null;
+			}
+
+			return;
 		}
 	}
 
@@ -150,6 +182,8 @@ public class GameManager : MonoBehaviour {
 			toInstantiate = PlayerTile;
 		} else if (type == 'D') {
 			toInstantiate = DiamondTile;
+		} else if (type == 'b') {
+			toInstantiate = BoxTile;
 		} else if (type == ' ') {
 			toInstantiate = null;
 		}
