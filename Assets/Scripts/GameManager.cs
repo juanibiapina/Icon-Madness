@@ -26,7 +26,7 @@ public class GameManager : MonoBehaviour {
 	void Awake() {
 		if (instance == null) {
 			instance = this;
-		} else if (instance != this){
+		} else if (this != instance){
 			Destroy (gameObject);    
 		}
 
@@ -38,16 +38,16 @@ public class GameManager : MonoBehaviour {
 		LoadLevel (level);
 	}
 
-	void OnLevelFinishedLoading(Scene scene, LoadSceneMode mode) {
+	void OnSceneFinishedLoading(Scene scene, LoadSceneMode mode) {
 		LoadNextLevel ();
 	}
 
 	void OnEnable(){
-		SceneManager.sceneLoaded += OnLevelFinishedLoading;
+		SceneManager.sceneLoaded += OnSceneFinishedLoading;
 	}
 
 	void OnDisable(){
-		SceneManager.sceneLoaded -= OnLevelFinishedLoading;
+		SceneManager.sceneLoaded -= OnSceneFinishedLoading;
 	}
 
 	void Update() {
@@ -69,6 +69,39 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
+	void MoveTile(int ox, int oy, int tx, int ty) {
+		int origPos = oy * this.currentLevelColumns + ox;
+		int targetPos = ty * this.currentLevelColumns + tx;
+
+		GameObject origTile = this.currentLevel [origPos];
+
+		origTile.transform.position = new Vector3 (tx, ty, 0);
+		this.currentLevel [targetPos] = origTile;
+		this.currentLevel [origPos] = null;
+	}
+
+	void RemoveTile(int x, int y) {
+		int pos = y * this.currentLevelColumns + x;
+		this.currentLevel [pos].SetActive (false);
+		this.currentLevel [pos] = null;
+	}
+
+	bool IsOut(int x, int y) {
+		int pos = y * this.currentLevelColumns + x;
+		return pos < 0 || pos >= this.currentLevel.Length;
+	}
+
+	void CheckLevelComplete() {
+		if (GameObject.FindWithTag ("Diamond") == null) {
+			SceneManager.LoadScene (0);
+		}
+	}
+
+	GameObject GetTile(int x, int y) {
+		int pos = y * this.currentLevelColumns + x;
+		return this.currentLevel [pos];
+	}
+
 	void AttemptMove (int xDir, int yDir) {
 		int px = (int)player.transform.position.x;
 		int py = (int)player.transform.position.y;
@@ -76,52 +109,36 @@ public class GameManager : MonoBehaviour {
 		int nx = px + xDir;
 		int ny = py + yDir;
 
-		int fx = nx + xDir;
-		int fy = ny + yDir;
+		if (IsOut (nx, ny)) {
+			return;
+		}
+			
+		GameObject targetTile = GetTile (nx, ny);
 
-		int playerTile = py * this.currentLevelColumns + px;
-		int newTile = ny * this.currentLevelColumns + nx;
-
-		if (newTile < 0 || newTile >= this.currentLevel.Length) {
+		if (targetTile == null) {
+			MoveTile (px, py, nx, ny);
 			return;
 		}
 
-		GameObject target = this.currentLevel[newTile];
+		if (targetTile.CompareTag ("Diamond")) {
+			RemoveTile (nx, ny);
+			MoveTile (px, py, nx, ny);
+			CheckLevelComplete ();
 
-		if (target == null) {
-			player.transform.position = new Vector3(nx, ny, 0);
-			this.currentLevel [newTile] = this.currentLevel [playerTile];
-			this.currentLevel [playerTile] = null;
 			return;
 		}
 
-		if (target.CompareTag ("Diamond")) {
-			player.transform.position = new Vector3(nx, ny, 0);
-			this.currentLevel [newTile].SetActive (false);
-			this.currentLevel [newTile] = this.currentLevel [playerTile];
-			this.currentLevel [playerTile] = null;
+		if (targetTile.CompareTag ("Box")) {
+			int fx = nx + xDir;
+			int fy = ny + yDir;
 
-			if (GameObject.FindWithTag ("Diamond") == null) {
-				SceneManager.LoadScene (0);
-			}
-			return;
-		}
-
-		if (target.CompareTag ("Box")) {
-			int farTile = fy * this.currentLevelColumns + fx;
-
-			if (farTile < 0 || farTile >= this.currentLevel.Length) {
+			if (IsOut(fx, fy)) {
 				return;
 			}
 
-			if (this.currentLevel [farTile] == null) {
-				this.currentLevel [newTile].transform.position = new Vector3 (fx, fy, 0);
-				this.currentLevel [farTile] = this.currentLevel [newTile];
-				this.currentLevel [newTile] = null;
-
-				player.transform.position = new Vector3(nx, ny, 0);
-				this.currentLevel [newTile] = this.currentLevel [playerTile];
-				this.currentLevel [playerTile] = null;
+			if (GetTile (fx, fy) == null) {
+				MoveTile (nx, ny, fx, fy);
+				MoveTile (px, py, nx, ny);
 			}
 
 			return;
