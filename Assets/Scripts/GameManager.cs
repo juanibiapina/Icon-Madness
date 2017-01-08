@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour {
 	public GameObject PlayerTile;
 	public GameObject DiamondTile;
 	public GameObject BoxTile;
+	public GameObject LeftArrowTile;
 
 	private int level = -1;
 
@@ -31,6 +32,51 @@ public class GameManager : MonoBehaviour {
 		}
 
 		DontDestroyOnLoad (gameObject);
+	}
+
+	void Start() {
+		InvokeRepeating ("UpdateObjects", 0.2f, 0.2f);
+	}
+
+	void UpdateObjects() {
+		for (int y = 0; y < this.currentLevelRows; y++) {
+			for (int x = 0; x < this.currentLevelColumns; x++) {
+				GameObject tile = GetTile (x, y);
+
+				if (tile == null) {
+					continue;
+				}
+
+				if (tile.CompareTag("Left Arrow")) {
+					if (IsOut (x - 1, y)) {
+						continue;
+					}
+
+					if (GetTile (x - 1, y) == null) {
+						MoveTile (x, y, x - 1, y);
+						continue;
+					}
+
+					if (GetTile (x - 1, y).CompareTag ("Left Arrow") || GetTile (x - 1, y).CompareTag ("Player")) {
+						if (GetTile (x, y - 1) == null) {
+							if (GetTile (x - 1, y - 1) == null) {
+								MoveTile (x, y, x - 1, y - 1);
+								continue;
+							}
+						}
+
+						if (GetTile (x, y + 1) == null) {
+							if (GetTile (x - 1, y + 1) == null) {
+								MoveTile (x, y, x - 1, y + 1);
+								continue;
+							}
+						}
+					}
+
+					continue;
+				}
+			}
+		}
 	}
 
 	void LoadNextLevel() {
@@ -205,6 +251,8 @@ public class GameManager : MonoBehaviour {
 			toInstantiate = DiamondTile;
 		} else if (type == 'b') {
 			toInstantiate = BoxTile;
+		} else if (type == 'l') {
+			toInstantiate = LeftArrowTile;
 		} else if (type == ' ') {
 			toInstantiate = null;
 		}
