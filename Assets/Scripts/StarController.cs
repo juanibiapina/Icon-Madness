@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class StarController : MonoBehaviour {
 
-	void OnTriggerEnter2D(Collider2D other) {
-		gameObject.SetActive (false);
-		GameManager.instance.StarPickedUp ();
+	void OnCollisionEnter2D(Collision2D collision) {
+		if (collision.gameObject.CompareTag ("Player")) {
+			gameObject.SetActive (false);
+			GameManager.instance.StarPickedUp ();
+		}
 	}
 }
