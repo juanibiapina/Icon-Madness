@@ -185,6 +185,10 @@ public class GameManager : MonoBehaviour {
 
 		// find player
 		player = GameObject.FindWithTag("Player");
+
+		// position camera
+		GameObject camera = GameObject.FindWithTag("MainCamera");
+		camera.transform.position = new Vector3 (this.currentLevelColumns / 2, this.currentLevelRows / 2, -10);
 	}
 
 	GameObject TileForPosition(int col, int row) {
