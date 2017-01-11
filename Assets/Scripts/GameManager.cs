@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour {
 
 	public BoardManager boardManager;
 
-	private int level = -1;
+	private int level = 0;
 
 	void Awake() {
 		if (instance == null) {
@@ -27,19 +27,25 @@ public class GameManager : MonoBehaviour {
 		InvokeRepeating ("UpdateObjects", 0.2f, 0.2f);
 	}
 
-	public void CheckLevelComplete() {
-		if (GameObject.FindWithTag ("Diamond") == null) {
+	void Update() {
+		if (Input.GetKeyDown (KeyCode.Space)) {
 			SceneManager.LoadScene (0);
 		}
 	}
 
-	void LoadNextLevel() {
-		level += 1;
-		boardManager.LoadLevel (level);
+	public void CheckLevelComplete() {
+		if (GameObject.FindWithTag ("Diamond") == null) {
+			LoadNextLevel ();
+		}
 	}
 
+	void LoadNextLevel() {
+		level++;
+		SceneManager.LoadScene (0);
+	}
+		
 	void OnSceneFinishedLoading(Scene scene, LoadSceneMode mode) {
-		LoadNextLevel ();
+		boardManager.LoadLevel (level);
 	}
 
 	void OnEnable(){
