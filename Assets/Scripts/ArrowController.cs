@@ -24,7 +24,7 @@ public class ArrowController : MonoBehaviour {
 			return;
 		}
 
-		if (boardManager.GetTile (x - 1, y).CompareTag ("Left Arrow") || boardManager.GetTile (x - 1, y).CompareTag ("Player")) {
+		if (boardManager.GetTile (x - 1, y).CompareTag ("Left Arrow")) {
 			if (boardManager.GetTile (x, y - 1) == null) {
 				if (boardManager.GetTile (x - 1, y - 1) == null) {
 					boardManager.MoveTile (x, y, x - 1, y - 1);
