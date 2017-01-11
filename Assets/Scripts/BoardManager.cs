@@ -65,6 +65,15 @@ public class BoardManager : MonoBehaviour {
 		return this.currentLevel [pos];
 	}
 
+	public void SetTile(int x, int y, GameObject tile) {
+		int pos = y * this.currentLevelColumns + x;
+		if (this.currentLevel[pos] != null) {
+			Destroy (this.currentLevel [pos]);
+		}
+		tile.transform.position = new Vector3 (x, y, 0);
+		this.currentLevel [pos] = tile;
+	}
+
 	public void MoveTile(int ox, int oy, int tx, int ty) {
 		int origPos = oy * this.currentLevelColumns + ox;
 		int targetPos = ty * this.currentLevelColumns + tx;
@@ -78,7 +87,17 @@ public class BoardManager : MonoBehaviour {
 
 	public void RemoveTile(int x, int y) {
 		int pos = y * this.currentLevelColumns + x;
-		this.currentLevel [pos].SetActive (false);
+		if (this.currentLevel [pos] != null) {
+			this.currentLevel [pos].SetActive (false);
+		}
+		this.currentLevel [pos] = null;
+	}
+
+	public void DestroyTile(int x, int y) {
+		int pos = y * this.currentLevelColumns + x;
+		if (this.currentLevel [pos] != null) {
+			Destroy (this.currentLevel [pos]);
+		}
 		this.currentLevel [pos] = null;
 	}
 

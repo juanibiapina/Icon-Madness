@@ -23,7 +23,7 @@ public class GameManager : MonoBehaviour {
 		boardManager = GetComponent<BoardManager> ();
 	}
 
-	void Update() {
+	protected void Update() {
 		if (Input.GetKeyDown (KeyCode.Space)) {
 			SceneManager.LoadScene (0);
 		}
