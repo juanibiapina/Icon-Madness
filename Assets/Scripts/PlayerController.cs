@@ -55,7 +55,7 @@ public class PlayerController : MonoBehaviour {
 			return;
 		}
 
-		if (targetTile.CompareTag ("Box")) {
+		if (targetTile.CompareTag ("Box") || targetTile.CompareTag ("Left Arrow")) {
 			int fx = nx + xDir;
 			int fy = ny + yDir;
 
