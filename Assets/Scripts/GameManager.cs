@@ -23,10 +23,6 @@ public class GameManager : MonoBehaviour {
 		boardManager = GetComponent<BoardManager> ();
 	}
 
-	void Start() {
-		InvokeRepeating ("UpdateObjects", 0.2f, 0.2f);
-	}
-
 	void Update() {
 		if (Input.GetKeyDown (KeyCode.Space)) {
 			SceneManager.LoadScene (0);
