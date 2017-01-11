@@ -17,6 +17,8 @@ public class BoardManager : MonoBehaviour {
 	private int currentLevelColumns;
 	private GameObject[] currentLevel;
 
+	private GameObject[] savedState;
+
 	public void LoadLevel(int levelNumber) {
 		// load raw data into an array of chars
 		TextAsset rawLevel = rawLevels [levelNumber];
@@ -104,6 +106,53 @@ public class BoardManager : MonoBehaviour {
 	public bool IsOut(int x, int y) {
 		int pos = y * this.currentLevelColumns + x;
 		return pos < 0 || pos >= this.currentLevel.Length;
+	}
+
+	public void SaveState() {
+		if (savedState != null) {
+			foreach (var tile in savedState) {
+				if (tile != null) {
+					Destroy (tile);
+				}
+			}
+		}
+
+		savedState = new GameObject[this.currentLevelRows * this.currentLevelColumns];
+
+		for (int y = 0; y < this.currentLevelRows; y++) {
+			for (int x = 0; x < this.currentLevelColumns; x++) {
+				GameObject toCopy = this.currentLevel[y * this.currentLevelColumns + x];
+
+				if (toCopy != null) {
+					GameObject instance = Instantiate (toCopy);
+					instance.SetActive (false);
+					savedState[y * this.currentLevelColumns + x] = instance;
+				}
+			}
+		}
+	}
+
+	public void LoadState() {
+		foreach (var tile in currentLevel) {
+			if (tile != null) {
+				Destroy (tile);
+			}
+		}
+
+
+		currentLevel = new GameObject[this.currentLevelRows * this.currentLevelColumns];
+
+		for (int y = 0; y < this.currentLevelRows; y++) {
+			for (int x = 0; x < this.currentLevelColumns; x++) {
+				GameObject toCopy = this.savedState[y * this.currentLevelColumns + x];
+
+				if (toCopy != null) {
+					GameObject instance = Instantiate (toCopy);
+					instance.SetActive (true);
+					currentLevel[y * this.currentLevelColumns + x] = instance;
+				}
+			}
+		}
 	}
 
 	GameObject TileForPosition(int col, int row) {

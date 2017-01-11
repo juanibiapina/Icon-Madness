@@ -38,5 +38,17 @@ public class EditorGameManager : GameManager {
 
 			return;
 		}
+
+		if (Input.GetKeyDown (KeyCode.S)) {
+			boardManager.SaveState ();
+
+			return;
+		}
+
+		if (Input.GetKeyDown (KeyCode.A)) {
+			boardManager.LoadState ();
+
+			return;
+		}
 	}
 }
